@@ -3,14 +3,14 @@
 
 ## typescript-tools.vim
 
-Vim plugin for TypeScript support, based on clausreinke/typescript-tools.
+Vim plugin for TypeScript support, based on https://github.com/clausreinke/typescript-tools.
 
 ### Installation
 
 1. Install `typescript-tools` globally
 
   ```
-  $ npm install -g typescript-tools
+  $ npm install -g clausreinke/typescript-tools
   ```
 
   The installation should give you a global `tss` command (try `tss --version`).
@@ -29,7 +29,7 @@ Vim plugin for TypeScript support, based on clausreinke/typescript-tools.
   ```
   filetype plugin on
   au BufRead,BufNewFile *.ts		setlocal filetype=typescript
-  set rtp+=<your_path_here>/typescript-tools/
+  set rtp+=<your_path_here>/typescript-tools.vim/
   ```
 
   Currently assumes that node is in path and that tss has been npm-installed globally.
