@@ -3,9 +3,12 @@
 
 ## typescript-tools.vim
 
-Vim plugin for TypeScript support, based on https://github.com/clausreinke/typescript-tools.
+Vim filetype plugin for TypeScript support, based on
+https://github.com/clausreinke/typescript-tools.
 
-### Installation
+Needs Vim 7.3 (plus Python 2.7 with json lib).
+
+### Installation/Configuration
 
 1. Install `typescript-tools` globally
 
@@ -17,38 +20,44 @@ Vim plugin for TypeScript support, based on https://github.com/clausreinke/types
 
 2. To use tss from Vim, add the `typescript-tools.vim` directory to your Vim's `rtp`.
 
-  tss can be configured the same way as tsc, either via commandline options or
-  via tsconfig.json files (since about TSv1.5). In both cases, only options that
-  affect the language service have any effect. 
-
-### vim interface to tss
-
-  Needs Vim 7.3 (plus Python 2.7 with json lib): this repo includes a Vim filetype plugin
-  for the `typescript` filetype, so just add the path to the repo to your Vim's
-  runtime path and enable filetype plugins.
   ```
   filetype plugin on
   au BufRead,BufNewFile *.ts		setlocal filetype=typescript
   set rtp+=<your_path_here>/typescript-tools.vim/
   ```
 
-  Currently assumes that node is in path and that tss has been npm-installed globally.
-  See top of file `ftplugin/typescript_tss.vim` for configuration options.
+3. `tss` can be configured the same way as `tsc`, either via commandline options or
+  via `tsconfig.json` files (since about TSv1.5). In both cases, only options that
+  affect the language service have any effect.
 
-  In practice, you'll use `:TSSstarthere`, `:TSSend`, `:TSSreload`, `TSStype`, `TSSdef*`,
-  as well as CTRL-X CTRL-O for insert mode completion. Also try the project (file) navigation
-  commands. Sometimes, calling `:TSSshowErrors` directly can give enough error
-  information for the current file -- eventually, you'll probably have to call
-  `:TSSreload` to account for changes in dependencies.
+  To change how `tss` is invoked, you can use the `g:TSS` variable (defaults to
+  `['tss']`, assuming a globally installed `tss` command, as above).  For
+  instance, ubuntu users may want to invoke `tss` via `nodejs` (different name
+  for `node`)
+  ```
+  let g:TSS = ['nodejs','<path-to-tss>']
+  ```
+  or you may want to pass commandline options for all your projects (for
+  project-specific options, a `tsconfig.json` file may be the better choice)
+  ```
+  let g:TSS = ['tss','--module','commonjs']
+  ```
 
-  (TODO: vim plugin demo)
-
-### Vim plugin usage tips
+### Usage tips
 
   1. the plugin collaborates with a tss server running in the background (via python and nodejs)
   2. the tss server will pick up source file dependencies (via import and references)
-  3. start the tss server while editing your main source file (or your main reference file), by issueing `:TSSstarthere`
+  3. start the tss server while editing your main source file (or your main reference file), by issueing `:TSSstarthere`, or `:TSSstart <main.ts>` (the latter allows you to pass options, the former is just a shorthand)
   4. now you can use the other commands (or `:TSSend`, to get rid of the background server), even while opening TS sources from the same project in different windows or tabs (but in the same Vim instance)
+
+  In practice, you'll use `:TSSstarthere`, `:TSSend`, `:TSSreload`, `TSStype`,
+  `TSSdef*`, as well as CTRL-X CTRL-O for insert mode completion. Also try the
+  project (file) navigation commands. Sometimes, calling `:TSSshowErrors`
+  directly can give enough error information for the current file --
+  eventually, you'll probably have to call `:TSSreload` to account for changes
+  in dependencies.
+
+  (TODO: vim plugin demo)
 
 ### Vim plugin commands
 
@@ -119,4 +128,3 @@ Vim plugin for TypeScript support, based on https://github.com/clausreinke/types
   "  since we support jump to definition directly)
   function! TSSkeymap()
   ```
-{ 
