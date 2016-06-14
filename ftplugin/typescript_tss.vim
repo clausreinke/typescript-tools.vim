@@ -1,27 +1,17 @@
 if exists("g:TSSloaded")
   finish
 endif
-if !has("python")
+
+let s:python_file = fnameescape(expand("<sfile>:p:h") . "/typescript_tss.py")
+if has("python")
+  exe "pyfile " . s:python_file
+elseif has("python3")
+  exe "py3file " . s:python_file
+else
   echoerr "typescript_tss.vim needs python interface"
   finish
-else
-
-python <<EOF
-import vim
-import subprocess
-import json
-import logging, platform
-TSS_LOG_FILENAME='tsstrace.log'
-
-class TSSnotrunning:
-  def poll(self):
-    return 0
-
-tss = TSSnotrunning()
-TSS_NOT_RUNNING_MSG='TSS not running - start with :TSSstarthere on main file'
-EOF
-
 endif
+
 let g:TSSloaded = 1
 
 """ configuration options - use your .vimrc to change defaults
@@ -44,8 +34,6 @@ endif
 if !exists("g:TSSfiles")
   let g:TSSfiles = []
 endif
-
-py TSS_MDN = "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/"
 
 " sample keymapping
 " (highjacking some keys otherwise used for tags,
@@ -96,7 +84,11 @@ function! TSSbrowse()
   for p in patterns
     let m = matchlist(info.fullSymbolName,p)
     if m!=[]
-      py webbrowser.open(TSS_MDN+vim.eval("m[1].'/'.m[2]"))
+      if has("python")
+        py webbrowser.open(TSS_MDN+vim.eval("m[1].'/'.m[2]"))
+      else
+        py3 webbrowser.open(TSS_MDN+vim.eval("m[1].'/'.m[2]"))
+      endif
       return m[1].'.'.m[2]
     endif
   endfor
@@ -213,7 +205,11 @@ function! TSScompleteFunc(findstart,base)
 
   if a:findstart
     if TSSstatus()!="None"
-      py vim.command('echoerr "'+TSS_NOT_RUNNING_MSG+'"')
+      if has("python")
+        py vim.command('echoerr "'+TSS_NOT_RUNNING_MSG+'"')
+      else
+        py3 vim.command('echoerr "'+TSS_NOT_RUNNING_MSG+'"')
+      endif
     endif
 
     " force updates for completed fragments, while still in insert mode
@@ -464,124 +460,57 @@ endfunction
 command! -nargs=* TSSstart call TSSstart(<f-args>)
 command! TSSstarthere call TSSstart(expand("%"))
 function! TSSstart(...)
-echomsg "starting TSS..."
-python <<EOF
-
-cmd = vim.eval("g:TSS")+vim.eval("a:000")
-print(cmd)
-tss = subprocess.Popen(cmd
-                      ,bufsize=0
-                      ,stdin=subprocess.PIPE
-                      ,stdout=subprocess.PIPE
-                      ,stderr=subprocess.PIPE
-                      ,shell=platform.system()=="Windows"
-                      ,universal_newlines=True)
-
-prompt = tss.stdout.readline()
-sys.stdout.write(prompt)
-# print prompt
-
-EOF
+  echomsg "starting TSS..."
+  if has("python")
+    py tss_start(vim.eval("g:TSS")+vim.eval("a:000"))
+  else
+    py3 tss_start(vim.eval("g:TSS")+vim.eval("a:000"))
+  endif
   call TSSfiles('fetch')
   if g:TSSshowErrors
     TSSshowErrors
   endif
 endfunction
 
-" TSS command tracing, off by default
-python traceFlag = False
-
 command! TSStraceOn call TSStrace('on')
 command! TSStraceOff call TSStrace('off')
 function! TSStrace(flag)
-python <<EOF
-
-if vim.eval('a:flag')=='on':
-  traceFlag = True
-  logging.basicConfig(filename=TSS_LOG_FILENAME,level=logging.DEBUG)
-else:
-  traceFlag = False
-  logger = logging.getLogger()
-  logger.handlers[0].stream.close()
-  logger.removeHandler(logger.handlers[0])
-
-EOF
+  if has("python")
+    py tss_trace(vim.eval('a:flag'))
+  else
+    py3 tss_trace(vim.eval('a:flag'))
+  endif
 endfunction
 
 " pass a command to typescript service, get answer
 command! -nargs=1 TSScmd call TSScmd(<f-args>,{})
 function! TSScmd(cmd,opts)
-python <<EOF
-
-(row,col) = vim.current.window.cursor
-filename  = vim.current.buffer.name
-opts      = vim.eval("a:opts")
-colArg    = opts['col'] if ('col' in opts) else str(col+1)
-cmd       = vim.eval("a:cmd")
-
-if tss.poll()==None:
-  if ('rawcmd' in opts):
-    request = cmd
-  else:
-    request = cmd+' '+str(row)+' '+colArg+' '+filename
-
-  if traceFlag:
-    logging.debug(request)
-
-  tss.stdin.write(request+'\n')
-
-  if ('lines' in opts):
-    for line in opts['lines']:
-      tss.stdin.write(line+'\n')
-
-  answer = tss.stdout.readline()
-
-  if traceFlag:
-    if ('lines' in opts):
-      for line in opts['lines']:
-        logging.debug(line)
-    logging.debug(answer)
-
-  try:
-    result = json.dumps(json.loads(answer,parse_constant=str))
-  except:
-    result = '"null"'
-
-else:
-  result = '"'+TSS_NOT_RUNNING_MSG+'"'
-
-vim.command("let null = 'null'")
-vim.command("let true = 'true'")
-vim.command("let false = 'false'")
-vim.command("let result = "+result)
-
-EOF
-return result
+  if has("python")
+    py tss_cmd(vim.eval('a:cmd'),vim.eval('a:opts'))
+  else
+    py3 tss_cmd(vim.eval('a:cmd'),vim.eval('a:opts'))
+  endif
+  return result
 endfunction
 
 " check typescript service
 " ("None": still running; "<num>": exit status)
 command! TSSstatus echo TSSstatus()
 function! TSSstatus()
-python <<EOF
-
-rest = tss.poll()
-vim.command("return "+json.dumps(str(rest)))
-
-EOF
+  if has("python")
+    py tss_status()
+  else
+    py3 tss_status()
+  endif
 endfunction
 
 " stop typescript service
 command! TSSend call TSSend()
 function! TSSend()
-python <<EOF
-
-if tss.poll()==None:
-  rest = tss.communicate('quit')[0]
-  sys.stdout.write(rest)
-else:
-  sys.stdout.write(TSS_NOT_RUNNING_MSG+'\n')
-
-EOF
+  if has("python")
+    py tss_end()
+  else
+    py3 tss_end()
+  endif
 endfunction
 
