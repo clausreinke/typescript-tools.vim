@@ -286,6 +286,9 @@ function! TSSpathMenu(prefix,path,pt)
   endif
 endfunction
 
+" hack, allows us to enter partial command from script
+menu TSS.- :emenu TSS.
+
 " navigate to project file via popup menu
 command! TSSfilesMenu echo TSSfilesMenu('show')
 function! TSSfilesMenu(action)
@@ -293,12 +296,20 @@ function! TSSfilesMenu(action)
   if type(files)==type([])
     let g:TSSfiles = files
     if a:action=~'show'
-      silent! unmenu ]TSSfiles
-      call TSSpathMenu('menu ]TSSfiles','',TSSgroupPaths(g:TSSfiles))
-      popup ]TSSfiles
+      silent! unmenu TSS.files
+      call TSSpathMenu('menu TSS.files','',TSSgroupPaths(g:TSSfiles))
+      if has("gui_running")
+        popup TSSfiles
+      else
+        emenu TSS.-
+      endif
     endif
   endif
-  popup ]TSSfiles
+  if has("gui_running")
+    popup TSSfiles
+  else
+    emenu TSS.-
+  endif
 endfunction
 
 " show project file list in preview window
@@ -405,11 +416,15 @@ command! TSSnavigation call TSSnavigation()
 function! TSSnavigation()
   let info = TSScmd("navigationBarItems ".expand("%:p"),{'rawcmd':1})
   if type(info)==type([])
-    silent! unmenu ]TSSnavigation
-    call TSSnavigationMenu('menu ]TSSnavigation',info)
+    silent! unmenu TSSnavigation
+    call TSSnavigationMenu('menu TSS.navigation',info)
     " TODO: mark directly before call cursor (bco tear-off menus)
     normal m'
-    popup ]TSSnavigation
+    if has("gui_running")
+      popup TSSnavigation
+    else
+      emenu TSS.-
+    endif
   else
     echoerr info
   endif
@@ -446,7 +461,11 @@ function! TSSnavigateTo(item)
     exe "menu ]TSSnavigateTo.".entry
           \ ." :call TSSgoto('".item.fileName."',".item.min.line.",".item.min.character.")<cr>"
   endfor
-  popup ]TSSnavigateTo
+  if has("gui_running")
+    popup ]TSSnavigateTo
+  else
+    emenu TSS.-
+  endif
 endfunction
 
 function! TSSgoto(file,line,col)
