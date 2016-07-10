@@ -1,0 +1,18 @@
+{
+  "name": "typescript-tools.vim",
+  "version": "0.5.0",
+  "description": "Filetype plugin for TypeScript support, based on typescript-tools",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clausreinke/typescript-tools.vim.git"
+  },
+  "author": "Claus Reinke",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/clausreinke/typescript-tools.vim/issues"
+  },
+  "dependencies": {
+    "typescript-tools": "clausreinke/typescript-tools"
+  },
+  "homepage": "https://github.com/clausreinke/typescript-tools.vim#readme"
+}

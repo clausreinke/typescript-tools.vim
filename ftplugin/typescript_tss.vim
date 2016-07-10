@@ -16,9 +16,9 @@ let g:TSSloaded = 1
 
 """ configuration options - use your .vimrc to change defaults
 
-" assume tss is a globally available command
+" assume tss is installed locally (run 'npm install' in typescript-tools.vim/)
 if !exists("g:TSS")
-  let g:TSS = ["tss"]
+  let g:TSS = [expand("<sfile>:p:h:h") . "/node_modules/typescript-tools/bin/tss"]
 endif
 
 " assume user wants to inspect errors on project load/reload

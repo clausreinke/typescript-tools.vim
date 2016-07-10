@@ -6,19 +6,25 @@
 Vim filetype plugin for TypeScript support, based on
 https://github.com/clausreinke/typescript-tools.
 
-Needs Vim 7.3 (plus Python 2.7 with json lib).
+Needs Vim 7.3 (with +python or +python3), nodejs/npm.
 
 ### Installation/Configuration
 
-1. Install `typescript-tools` globally
+Alternative 1. Install `typescript-tools.vim` via a plugin manager, eg. vim-plug
 
   ```
-  $ npm install -g clausreinke/typescript-tools
+  Plug 'clausreinke/typescript-tools.vim', { 'do': 'npm install' }
   ```
 
-  The installation should give you a global `tss` command (try `tss --version`).
+Alternative 2. Install `typescript-tools.vim` manually
 
-2. To use tss from Vim, add the `typescript-tools.vim` directory to your Vim's `rtp`.
+  ```
+  $ npm install clausreinke/typescript-tools.vim
+  ```
+
+  The installation includes a local `tss` command (try `node_modules/typescript/bin/tss --version`).
+
+  To use tss from Vim, add the `typescript-tools.vim` directory to your Vim's `rtp` (in your ~/.vimrc).
 
   ```
   filetype plugin on
@@ -26,22 +32,21 @@ Needs Vim 7.3 (plus Python 2.7 with json lib).
   set rtp+=<your_path_here>/typescript-tools.vim/
   ```
 
-3. `tss` can be configured the same way as `tsc`, either via commandline options or
-  via `tsconfig.json` files (since about TSv1.5). In both cases, only options that
-  affect the language service have any effect.
+`tss` can be configured the same way as `tsc`, either via commandline options or
+via `tsconfig.json` files (since about TSv1.5). In both cases, only options that
+affect the language service have any effect.
 
-  To change how `tss` is invoked, you can use the `g:TSS` variable (defaults to
-  `['tss']`, assuming a globally installed `tss` command, as above).  For
-  instance, ubuntu users may want to invoke `tss` via `nodejs` (different name
-  for `node`)
-  ```
-  let g:TSS = ['nodejs','<path-to-tss>']
-  ```
-  or you may want to pass commandline options for all your projects (for
-  project-specific options, a `tsconfig.json` file may be the better choice)
-  ```
-  let g:TSS = ['tss','--module','commonjs']
-  ```
+To change how `tss` is invoked, you can use the `g:TSS` variable (defaults to
+`['node_modules/typescript-tools/bin/tss']`, assuming a locally installed `tss` command,
+as above).  Ubuntu users may want to invoke `tss` via `nodejs` (different name for `node`)
+```
+let g:TSS = ['nodejs','<path-to-tss>']
+```
+or you may want to pass commandline options for all your projects (for
+project-specific options, a `tsconfig.json` file may be the better choice)
+```
+let g:TSS = ['tss','--module','commonjs']
+```
 
 ### Usage tips
 

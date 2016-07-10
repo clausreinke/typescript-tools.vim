@@ -1,3 +1,9 @@
+0.5.0:
+
+  - prefer locally installed `tss` and installation via plugin manager
+
+  - add a `package.json`, to allow for npm installation
+
 0.4.6:
 
   - split into vim plugin (typescript-tools.vim) and commandline server (typescript-tools)
